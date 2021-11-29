@@ -576,22 +576,31 @@ class Cognito:
         )
 
     def admin_create_user(
-        self, username, temporary_password="", attr_map=None, **kwargs
+        self,
+        username,
+        temporary_password="",
+        additional_kwargs=None,
+        attr_map=None,
+        **kwargs,
     ):
         """
         Create a user using admin super privileges.
         :param username: User Pool username
         :param temporary_password: The temporary password to give the user.
         Leave blank to make Cognito generate a temporary password for the user.
+        :param additional_kwargs: Dictionary with request params, such as MessageAction.
         :param attr_map: Attribute map to Cognito's attributes
         :param kwargs: Additional User Pool attributes
         :return response: Response from Cognito
         """
+        if additional_kwargs is None:
+            additional_kwargs = {}
         response = self.client.admin_create_user(
             UserPoolId=self.user_pool_id,
             Username=username,
             UserAttributes=dict_to_cognito(kwargs, attr_map),
             TemporaryPassword=temporary_password,
+            **additional_kwargs,
         )
         kwargs.update(username=username)
         self._set_attributes(response, kwargs)
@@ -656,7 +665,7 @@ class Cognito:
         self.client.admin_reset_user_password(
             UserPoolId=self.user_pool_id,
             Username=username,
-            ClientMetatada=client_metadata,
+            ClientMetadata=client_metadata,
         )
 
     def confirm_forgot_password(self, confirmation_code, password):
