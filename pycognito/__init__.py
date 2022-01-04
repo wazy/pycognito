@@ -336,7 +336,7 @@ class Cognito:
 
         self.custom_attributes = custom_attributes
 
-    def register(self, username, password, attr_map=None):
+    def register(self, username, password, attr_map=None, client_metadata=None):
         """
         Register the user. Other base attributes from AWS Cognito User Pools
         are  address, birthdate, email, family_name (last name), gender,
@@ -346,6 +346,7 @@ class Cognito:
         :param username: User Pool username
         :param password: User Pool password
         :param attr_map: Attribute map to Cognito's attributes
+        :param client_metadata: Metadata about the user that will be used for ClientMetadata
         :return response: Response from Cognito
 
         Example response::
@@ -372,6 +373,8 @@ class Cognito:
             "Password": password,
             "UserAttributes": cognito_attributes,
         }
+        if client_metadata is not None:
+            params["ClientMetadata"] = client_metadata
         self._add_secret_hash(params, "SecretHash")
         response = self.client.sign_up(**params)
 
