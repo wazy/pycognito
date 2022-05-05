@@ -240,6 +240,7 @@ class Cognito:
                 algorithms=["RS256"],
                 audience=self.client_id,
                 issuer=self.user_pool_url,
+                access_token=self.access_token,
                 options={
                     "require_aud": token_use != "access",
                     "require_iss": True,
@@ -727,12 +728,12 @@ class Cognito:
         Helper function to verify and set token attributes based on a Cognito
         AuthenticationResult.
         """
-        self.verify_token(tokens["AuthenticationResult"]["IdToken"], "id_token", "id")
-        if "RefreshToken" in tokens["AuthenticationResult"]:
-            self.refresh_token = tokens["AuthenticationResult"]["RefreshToken"]
         self.verify_token(
             tokens["AuthenticationResult"]["AccessToken"], "access_token", "access"
         )
+        self.verify_token(tokens["AuthenticationResult"]["IdToken"], "id_token", "id")
+        if "RefreshToken" in tokens["AuthenticationResult"]:
+            self.refresh_token = tokens["AuthenticationResult"]["RefreshToken"]
         self.token_type = tokens["AuthenticationResult"]["TokenType"]
 
     def _set_attributes(self, response, attribute_dict):
