@@ -274,14 +274,14 @@ class Cognito:
         self, username=None, attribute_list=None, metadata=None, attr_map=None
     ):
         """
-        Returns the specified
+        Returns the specified user
         :param username: Username of the user
         :param attribute_list: List of tuples that represent the user's
             attributes as returned by the admin_get_user or get_user boto3 methods
         :param metadata: Metadata about the user
         :param attr_map: Dictionary that maps the Cognito attribute names to
         what we'd like to display to the users
-        :return:
+        :return: dictionary of the Cognito user response
         """
         return self.user_class(
             username=username,
@@ -344,7 +344,7 @@ class Cognito:
     def register(self, username, password, attr_map=None, client_metadata=None):
         """
         Register the user. Other base attributes from AWS Cognito User Pools
-        are  address, birthdate, email, family_name (last name), gender,
+        are address, birthdate, email, family_name (last name), gender,
         given_name (first name), locale, middle_name, name, nickname,
         phone_number, picture, preferred_username, profile, zoneinfo,
         updated at, website
@@ -531,7 +531,7 @@ class Cognito:
         user's access token.
         :param attr_map: Dictionary map from Cognito attributes to attribute
         names we would like to show to our users
-        :return:
+        :return: UserObj dictionary
         """
         user = self.client.get_user(AccessToken=self.access_token)
 
@@ -582,7 +582,7 @@ class Cognito:
         Get the user's details using admin super privileges.
         :param attr_map: Dictionary map from Cognito attributes to attribute
         names we would like to show to our users
-        :return: UserObj object
+        :return: UserObj dictionary
         """
         user = self.client.admin_get_user(
             UserPoolId=self.user_pool_id, Username=self.username
@@ -639,7 +639,7 @@ class Cognito:
     def send_verification(self, attribute="email"):
         """
         Sends the user an attribute verification code for the specified attribute name.
-        :param attribute: Attribute to confirm
+        :param attribute: Attribute to confirm. Defaults to "email"
         """
         self.check_token()
         self.client.get_user_attribute_verification_code(
@@ -650,7 +650,7 @@ class Cognito:
         """
         Verifies the specified user attributes in the user pool.
         :param confirmation_code: Code sent to user upon intiating verification
-        :param attribute: Attribute to confirm
+        :param attribute: Attribute to confirm. Defaults to "email"
         """
         self.check_token()
         return self.client.verify_user_attribute(
@@ -661,7 +661,7 @@ class Cognito:
 
     def renew_access_token(self):
         """
-        Sets a new access token on the User using the refresh token.
+        Sets a new access token on the User using the cached refresh token.
         """
         auth_params = {"REFRESH_TOKEN": self.refresh_token}
         self._add_secret_hash(auth_params, "SECRET_HASH")
@@ -681,7 +681,6 @@ class Cognito:
         self.client.forgot_password(**params)
 
     def delete_user(self):
-
         self.client.delete_user(AccessToken=self.access_token)
 
     def admin_delete_user(self):
@@ -700,8 +699,7 @@ class Cognito:
 
     def confirm_forgot_password(self, confirmation_code, password):
         """
-        Allows a user to enter a code provided when they reset their password
-        to update their password.
+        Allows a user to provide their verification code and choose a new password.
         :param confirmation_code: The confirmation code sent by a user's request
         to retrieve a forgotten password
         :param password: New password
@@ -756,7 +754,7 @@ class Cognito:
         """
         Set user attributes based on response code
         :param response: HTTP response from Cognito
-        :attribute dict: Dictionary of attribute name and values
+        :param attribute_dict: Dictionary of attribute names and values
         """
         status_code = response.get(
             "HTTPStatusCode", response["ResponseMetadata"]["HTTPStatusCode"]
@@ -767,7 +765,7 @@ class Cognito:
 
     def get_group(self, group_name):
         """
-        Get a group by a name
+        Get a group by name
         :param group_name: name of a group
         :return: instance of the self.group_class
         """
@@ -778,9 +776,8 @@ class Cognito:
 
     def get_groups(self):
         """
-        Returns all groups for a user pool. Returns instances of the
-        self.group_class.
-        :return: list of instances
+        Returns all groups for a user pool.
+        :return: list of instances of self.group_class
         """
         response = self.client.list_groups(UserPoolId=self.user_pool_id)
         return [self.get_group_obj(group_data) for group_data in response.get("Groups")]
@@ -815,7 +812,7 @@ class Cognito:
         """
         Get the list of groups a user belongs to
         :param username:
-        :return: List
+        :return: List of group objects
         """
 
         def process_groups_response(groups_response):
@@ -884,7 +881,7 @@ class Cognito:
 
     def admin_describe_identity_provider(self, pool_id, provider_name):
         """
-        Updates an existing identity provider
+        Describes an existing identity provider
         :param pool_id: The user pool ID
         :param provider_name: The identity provider name
         :return: dict of identity provider
@@ -932,14 +929,14 @@ class Cognito:
 
     def associate_software_token(self):
         """
-        Get the SecretCode used for Software Token. SecretCode use to set up Software Token MFA.
-        :return: SecretCode
+        Get the Secret code used for Software Token MFA.
+        :return: Secret code
         :rtype: string
         """
         response = self.client.associate_software_token(AccessToken=self.access_token)
         return response["SecretCode"]
 
-    def verify_software_token(self, code, device_name):
+    def verify_software_token(self, code, device_name=""):
         """
         Verify the value generated by TOTP to complete the registration of Software Token MFA.
         :param code: The value generated by TOTP
@@ -959,7 +956,7 @@ class Cognito:
         :type sms_mfa: bool
         :param software_token_mfa: Enable Software Token MFA.
         :type software_token_mfa: bool
-        :param preferred: Which is the priority, SMS or Software Token? The expected value is "SMS" or "SOFTWARE_TOKEN". However, it is not needed only if both of the previous arguments are False.
+        :param preferred: "SMS" or "SOFTWARE_TOKEN", or None if both of the previous arguments are False.
         :type preferred: string
         :return:
         """
@@ -971,13 +968,13 @@ class Cognito:
         if not (bool(sms_mfa) or bool(software_token_mfa)):
             # Disable MFA
             pass
-        if preferred == "SMS":
+        elif preferred == "SMS":
             sms_mfa_settings["PreferredMfa"] = True
         elif preferred == "SOFTWARE_TOKEN":
             software_token_mfa_settings["PreferredMfa"] = True
         else:
             raise ValueError(
-                "preferred is not the correct value.\nThe expected value is SMS or SOFTWARE_TOKEN."
+                "preferred must have a value of 'SMS', 'SOFTWARE_TOKEN', or None."
             )
         self.client.set_user_mfa_preference(
             SMSMfaSettings=sms_mfa_settings,
@@ -987,11 +984,11 @@ class Cognito:
 
     def respond_to_software_token_mfa_challenge(self, code, mfa_tokens=None):
         """
-        Respons challenge to software token of MFA.
+        Response to software token MFA challenge.
         :param code: software token MFA code.
         :type code: string
-        :param code: mfa_token stored in MFAChallengeException. Not required if you have not regenerated the Cognito instance.
-        :type code: string
+        :param mfa_token: Token stored in MFAChallengeException. Optional if you have not regenerated the Cognito instance.
+        :type mfa_token: string
         :return:
         """
         if not mfa_tokens:
@@ -1011,11 +1008,11 @@ class Cognito:
 
     def respond_to_sms_mfa_challenge(self, code, mfa_tokens=None):
         """
-        Respons challenge to SMS MFA.
+        Response to SMS MFA challenge.
         :param code: SMS MFA code.
         :type code: string
-        :param code: mfa_token stored in MFAChallengeException. Not required if you have not regenerated the Cognito instance.
-        :type code: string
+        :param mfa_tokens: Token stored in MFAChallengeException. Optional if you have not regenerated the Cognito instance.
+        :type mfa_tokens: string
         :return:
         """
         if not mfa_tokens:
@@ -1027,7 +1024,7 @@ class Cognito:
         self._add_secret_hash(challenge_responses, "SECRET_HASH")
         tokens = self.client.respond_to_auth_challenge(
             ClientId=self.client_id,
-            Session=self.mfa_tokens["Session"],
+            Session=mfa_tokens["Session"],
             ChallengeName="SMS_MFA",
             ChallengeResponses=challenge_responses,
         )
