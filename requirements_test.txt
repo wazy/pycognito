@@ -1,9 +1,9 @@
 mock==4.0.3
 coverage==6.3.2
 black==22.10.0
-flake8==4.0.1
+flake8==7.0.0
 pylint==2.15.5
 pytest==7.1.2
-moto>=3.0.3
+moto>=5.0.0
 requests-mock==1.9.3
 freezegun==1.2.1

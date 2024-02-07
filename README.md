@@ -711,7 +711,7 @@ response, device_password = user.confirm_device(tokens=tokens)
 ### Updating Device Status
 
 The `update_device_status` class method is used to update whether or not your device should be remembered. This method takes
-three inputs, `isRemembered`, `access_token` and `device_key`. `isRemembered` is a boolean value, which sets the device status as 
+three inputs, `is_remembered`, `access_token` and `device_key`. `is_remembered` is a boolean value, which sets the device status as 
 `"remembered"` on `True` and `"not_remembered"` on `False`, `access_token` is the Access Token provided by Cognito and `device_key` is the key 
 provided by the `authenticate_user` method.
 
