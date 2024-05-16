@@ -260,6 +260,7 @@ class Cognito:
                 issuer=self.user_pool_url,
                 options={
                     "require": required_claims,
+                    "verify_iat": False,
                 },
             )
         except jwt.PyJWTError as err:
@@ -273,6 +274,14 @@ class Cognito:
             raise TokenVerificationException(
                 f"Your {id_name!r} token use ({token_use!r}) could not be verified."
             )
+
+        if (iat := verified.get("iat")) is not None:
+            try:
+                int(iat)
+            except ValueError as execption:
+                raise TokenVerificationException(
+                    f"Your {id_name!r} token's iat claim is not a valid integer."
+                ) from execption
 
         # Compute and verify at_hash (formerly done by python-jose)
         if "at_hash" in verified:
