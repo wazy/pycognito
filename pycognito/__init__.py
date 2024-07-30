@@ -934,6 +934,18 @@ class Cognito:
             **kwargs,
         )
 
+    def delete_user_pool_client(self, pool_id=None, client_id=None):
+        """
+        Deletes a user pool client
+        :param pool_id: The user pool ID (defaults to self.user_pool_id)
+        :param client_id: The client ID (defaults to self.client_id)
+        :return:
+        """
+        self.client.delete_user_pool_client(
+            UserPoolId=pool_id,
+            ClientId=client_id,
+        )
+
     def describe_user_pool_client(self, pool_id: str, client_id: str):
         """
         Returns configuration information of a specified user pool app client
