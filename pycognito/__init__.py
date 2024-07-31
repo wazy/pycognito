@@ -941,6 +941,11 @@ class Cognito:
         :param client_id: The client ID (defaults to self.client_id)
         :return:
         """
+        if pool_id is None:
+            pool_id = self.user_pool_id
+        if client_id is None:
+            client_id = self.client_id
+
         self.client.delete_user_pool_client(
             UserPoolId=pool_id,
             ClientId=client_id,
