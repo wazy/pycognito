@@ -351,7 +351,10 @@ class Cognito:
         :return: dictionary of the Cognito user response
         """
         if username is None:
-            username = self.username or attribute_list.get("Username")
+            if attribute_list is None:
+                username = self.username
+            else:
+                username = self.username or attribute_list.get("Username")
 
         return self.user_class(
             username=username,
