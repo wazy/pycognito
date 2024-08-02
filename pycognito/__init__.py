@@ -1042,6 +1042,7 @@ class Cognito:
             **kwargs,
         )
 
+<<<<<<< HEAD
     def list_user_pool_clients(
         self,
         pool_id: str | None = None,
@@ -1099,9 +1100,7 @@ class Cognito:
             ClientId=client_id,
         )
 
-    def create_user_pool_client(
-        self, client_name, pool_id=None, **kwargs
-    ):
+    def create_user_pool_client(self, client_name, pool_id=None, **kwargs):
         """
         Creates a user pool client
         :param client_name: The name of the user pool client
