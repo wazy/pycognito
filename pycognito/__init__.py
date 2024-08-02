@@ -1042,7 +1042,6 @@ class Cognito:
             **kwargs,
         )
 
-<<<<<<< HEAD
     def list_user_pool_clients(
         self,
         pool_id: str | None = None,
