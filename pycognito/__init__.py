@@ -342,7 +342,7 @@ class Cognito:
     ):
         """
         Returns the specified user
-        :param username: Username of the user
+        :param username: Username of the user (if None then self.username or Username from attribute_list is used)
         :param attribute_list: List of tuples that represent the user's
             attributes as returned by the admin_get_user or get_user boto3 methods
         :param metadata: Metadata about the user
@@ -350,6 +350,9 @@ class Cognito:
         what we'd like to display to the users
         :return: dictionary of the Cognito user response
         """
+        if username is None:
+            username = self.username or attribute_list.get("Username")
+
         return self.user_class(
             username=username,
             attribute_list=attribute_list,
