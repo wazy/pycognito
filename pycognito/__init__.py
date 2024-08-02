@@ -350,6 +350,13 @@ class Cognito:
         what we'd like to display to the users
         :return: dictionary of the Cognito user response
         """
+        # try to detect the username from self or the attribute list if not set
+        if username is None:
+            if attribute_list is None:
+                username = self.username
+            else:
+                username = self.username or attribute_list.get("Username")
+
         return self.user_class(
             username=username,
             attribute_list=attribute_list,
