@@ -2,6 +2,7 @@ import ast
 import base64
 import datetime
 import re
+from typing import Union, List
 
 import boto3
 from envs import env
@@ -234,21 +235,21 @@ class Cognito:
 
         return f"https://cognito-idp.{self.user_pool_region}.amazonaws.com/{self.user_pool_id}"
 
-    def get_users_pagination_token(self) -> str | None:
+    def get_users_pagination_token(self) -> Union[str, None]:
         """
         Returns the pagination token set by the get_users call
         :return: str token or None if no more results to request
         """
         return self._users_pagination_next_token
 
-    def get_groups_pagination_token(self) -> str | None:
+    def get_groups_pagination_token(self) -> Union[str, None]:
         """
         Returns the pagination token set by the get_group call
         :return: str token or None if no more results to request
         """
         return self._groups_pagination_next_token
 
-    def get_clients_pagination_token(self) -> str | None:
+    def get_clients_pagination_token(self) -> Union[str, None]:
         """
         Returns the pagination token set by the list_user_pool_clients call
         :return: str token or None if no more results to request
@@ -642,10 +643,10 @@ class Cognito:
     def get_users(
         self,
         attr_map=None,
-        pool_id: str | None = None,
-        page_limit: int | None = None,
-        page_token: str | None = None,
-    ) -> list[UserObj]:
+        pool_id: Union[str, None] = None,
+        page_limit: Union[int, None] = None,
+        page_token: Union[str, None] = None,
+    ) -> List[UserObj]:
         """
         Returns all users for a user pool. Returns instances of the
         self.user_class. If page_limit is set then it will return that many (0 to 60)
@@ -749,6 +750,23 @@ class Cognito:
 
         response.pop("ResponseMetadata")
         return response
+
+    def admin_set_user_password(self, username, passqord, permanent=False):
+        """
+        Explicitly set a users password and optionaly set their status as
+        'Confirmed' when Permanent=True
+        :param username: the cognito username
+        :param passqord: the password to set for the user
+        :param permanent: set the password type -
+        if True user status will be set to 'Confirmed',
+        if False user status will be set to 'FORCE_CHANGE_PASSWORD'
+        """
+        self.client.admin_set_user_password(
+            UserPoolId=self.user_pool_id,
+            Username=username,
+            Password=passqord,
+            Permanent=permanent,
+        )
 
     def send_verification(self, attribute="email"):
         """
@@ -890,10 +908,10 @@ class Cognito:
 
     def get_groups(
         self,
-        pool_id: str | None = None,
-        page_limit: int | None = None,
-        page_token: str | None = None,
-    ) -> list[GroupObj]:
+        pool_id: Union[str, None] = None,
+        page_limit: Union[int, None] = None,
+        page_token: Union[str, None] = None,
+    ) -> List[GroupObj]:
         """
         Returns all groups for a user pool. If page_limit is set then it
         will return that many (0 to 60) while setting self._groups_pagination_next_token
@@ -1051,10 +1069,10 @@ class Cognito:
 
     def list_user_pool_clients(
         self,
-        pool_id: str | None = None,
-        page_limit: int | None = None,
-        page_token: str | None = None,
-    ) -> list[dict]:
+        pool_id: Union[str, None] = None,
+        page_limit: Union[int, None] = None,
+        page_token: Union[str, None] = None,
+    ) -> List[dict]:
         """
         Returns configuration information of a user pool's clients. If page limit is set
         then it will return that many (0 to 60) while setting self._clients_pagination_next_token
